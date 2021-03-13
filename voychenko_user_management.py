@@ -1,8 +1,13 @@
+from pathlib import Path
+path = Path(__file__).resolve()
+path = path.parent
+file_path = path / "number_phone.txt"
+
 
 def choice():
     print('Главное меню\n'
           '1. Зарегистрировать нового пользователя\n'
-          '2. Вывестисписок новых пользователей\n'
+          '2. Вывести список новых пользователей\n'
           '3. Выход\n')
     num_c = input('Сделайте выбор: ')
     if num_c == '1':
@@ -33,11 +38,11 @@ def number_phone():
 
 
 def check_phone(phone):
-    with open('number_phone.txt') as f:
+    with open(file_path) as f:
         for i in f.readlines():
             tmp_num = i.count(phone, 0, 12)
             if tmp_num != 0:
-                print('Пользователь с таким номером уже существует')
+                print('Пользователь с таким номером уже существует\n')
                 return main()
     return
 
@@ -78,8 +83,57 @@ def password():
 
 
 def save_user(*args):
-    with open('number_phone.txt', 'a') as f:
+    with open(file_path, 'a') as f:
         print(*args, file=f)
+
+
+def print_register(phone, email, password_):
+
+    print(
+        f'\nПоздравляем с успешной регистрацией!\n'
+        f'Ваш номер телефона: {phone}\n'
+        f'Ваш email: {email}\n'
+        f'Ваш пароль: {len(password_) * "*"}\n'
+    )
+    return
+
+
+def num_users():
+    list_users = []
+    count_user = 0
+    with open(file_path, 'r') as f:
+        f.seek(0)
+        for i in f.readlines():
+            list_users.append(i[:-1])
+            count_user += 1
+        print(f'\nКоличество зарегистрированых пользователей: {count_user}')
+    return list_users
+
+
+def num_list_users(list_user):
+    index_user = 1
+    str_phone = ''
+    for i in list_user:
+        i = i.split(' ')
+        user_name = i[0]
+        str_phone += f'{index_user}. {user_name}\n'
+        index_user += 1
+    return print(str_phone)
+
+
+def info_user(list_user):
+    chois_num = input('Для отображения детальной информации пользователя, выберите порядковый номер :')
+    if chois_num.isdigit():
+        chois_num = int(chois_num) - 1
+    else:
+        return info_user(list_user)
+    if chois_num in range(1, len(list_user)):
+        info_print = list_user[chois_num].split(' ')
+        return print(f'\nНомер телефона: {info_print[0]}\n'
+                     f'Емейл: {info_print[1]}\n'
+                     f'Пароль: {info_print[2]}\n')
+    print(f'\nВыберите число от 1 до {len(list_user)}')
+    return info_user(list_user)
 
 
 def main():
@@ -91,17 +145,22 @@ def main():
         password_var = password()
         user = f'{number_phone_var} {email_form_var} {password_var}'
         save_user(user)
-        print(
-            f'\nПоздравляем с успешной регистрацией!\n'
-            f'Ваш номер телефона: {number_phone_var}\n'
-            f'Ваш email: {email_form_var}\n'
-            f'Ваш пароль: {len(password_var) * "*"}\n'
-        )
+        print_register(number_phone_var, email_form_var, password_var)
         return main()
 
     elif choice_var == 2:
-        pass
+        num_users_var = num_users()
+        yes_no = input('Отобразить всех пользователей? (да/нет): \n')
+        if yes_no == 'да':
+            num_list_users(num_users_var)
+            info_user(num_users_var)
+        elif yes_no == 'нет':
+            return main()
+        else:
+            print('Нужно ввести "да" или "нет"\n')
+    return main()
 
 
 if __name__ == '__main__':
     main()
+
